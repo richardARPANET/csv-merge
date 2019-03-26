@@ -1,13 +1,17 @@
 [package]
 name = "csv-merge"
 description = "A cli tool for merging CSV files"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Richard O'Dwyer <richard@richard.do>"]
 edition = "2018"
 license = "Apache-2.0"
 repository = "https://github.com/richardARPANET/csv-merge"
 readme = "README.md"
 keywords = ["cli", "csv", "merge"]
+include = [
+    "**/*.rs",
+    "Cargo.toml",
+]
 
 [dependencies]
 csv = "1"
