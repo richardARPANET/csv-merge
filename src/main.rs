@@ -5,7 +5,6 @@ extern crate csv;
 use std::error::Error;
 use std::io;
 use std::env;
-use std::path::Path;
 
 
 fn main() -> Result<(), Box<Error>> {
@@ -17,12 +16,13 @@ fn main() -> Result<(), Box<Error>> {
 
     for csv_path in csv_paths
     {
-        if Path::new(csv_path).exists() == false {
-            let msg = format!("{} does not exist", csv_path);
-            return Err(Box::from(msg));
+        let mut reader;
+        match csv::Reader::from_path(&csv_path) {
+            Ok(val) => reader = val,
+            Err(_) => return Err(Box::from(
+                format!("{} does not exist", csv_path)
+            )),
         }
-
-        let mut reader = csv::Reader::from_path(&csv_path)?;
         if headers_written == false {
             writer.write_record(reader.headers()?)?;
             headers_written = true;
