@@ -85,4 +85,11 @@ test_suite! {
             .stdout().is(expected_output)
             .unwrap();
     }
+
+    test test_input_csvs_do_not_exist() {
+        let cmd = &["cargo", "run", "does-not-exist.csv", "does-not-exist.csv"];
+        assert_cli::Assert::command(cmd)
+            .fails()
+            .unwrap();
+    }
 }
