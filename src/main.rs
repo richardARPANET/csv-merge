@@ -36,24 +36,51 @@ fn main() -> Result<(), Box<Error>> {
 }
 
 
-#[cfg(test)]
-mod tests {
+#[macro_use]
+extern crate galvanic_test;
+
+
+test_suite! {
+    use super::*;
     use assert_cli;
 
-    #[test]
-    fn test_outputs_csv() {
+    fn create_test_csv(label: &str) -> Result<String, io::Error> {
+        let csv_path = String::from(format!("/tmp/{}.csv", label));
+        let mut wtr = csv::WriterBuilder::new().from_path(&csv_path)?;
+        wtr.write_record(&["header", "header2"])?;
+        wtr.write_record(
+            &[format!("csv{}_value{}_a", label, label),
+            format!("csv{}_anothervalue{}_a", label, label)]
+        )?;
+        wtr.write_record(
+            &[format!("csv{}_value{}_b", label, label),
+            format!("csv{}_anothervalue{}_b", label, label)]
+        )?;
+        wtr.flush()?;
+        return Ok(csv_path)
+    }
+
+    test test_outputs_csv() {
+        let csv_path1;
+        let csv_path2;
+
+        match create_test_csv("1") {
+            Ok(val) => csv_path1 = val,
+            Err(e) => panic!(e),
+        }
+        match create_test_csv("2") {
+            Ok(val) => csv_path2 = val,
+            Err(e) => panic!(e),
+        }
+
         let expected_output = "\
             header,header2\n\
-            a,123\n\
-            hello,456\n\
-            bob,\n\
-            2-a,2-123\n\
-            2-hello,2-456\n\
-            2-bob,";
+            csv1_value1_a,csv1_anothervalue1_a\n\
+            csv1_value1_b,csv1_anothervalue1_b\n\
+            csv2_value2_a,csv2_anothervalue2_a\n\
+            csv2_value2_b,csv2_anothervalue2_b\n";
 
-        let cmd = &[
-            "cargo", "run", "src/test_data/1.csv", "src/test_data/2.csv"
-        ];
+        let cmd = &["cargo", "run", &csv_path1, &csv_path2];
         assert_cli::Assert::command(cmd)
             .stdout().is(expected_output)
             .unwrap();
